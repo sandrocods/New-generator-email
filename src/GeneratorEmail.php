@@ -11,6 +11,7 @@ class GeneratorEmail
 {
     public $domain;
     public $user;
+    public $data;
 
     const API = 'https://generator.email/';
     const Header = [
@@ -24,6 +25,15 @@ class GeneratorEmail
     ];
 
     /**
+     * Get Data All Fields
+     *
+     **/
+    public function getData()
+    {
+        return $this->data;
+    }
+
+    /**
      * Get New Email Address
      *
      **/
@@ -34,7 +44,7 @@ class GeneratorEmail
             $this->user = $username;
             $this->domain = $domains;
 
-            return [
+            $this->data = [
                 'Email' => $this->user . '@' . $this->domain,
             ];
 
@@ -45,20 +55,20 @@ class GeneratorEmail
             if ($value[0] && $value[1] !== '') {
                 $this->user = $value[2];
                 $this->domain = $value[1];
-                return [
+                $this->data = [
                     'status' => true,
                     'Email' => $this->user . "@" . $this->domain,
                     'User' => $this->user,
                     'Domain' => $this->domain,
                 ];
             } else {
-                return [
+                $this->data = [
                     'status' => false,
                 ];
             }
 
         }
-
+        return $this;
     }
 
     /**
@@ -98,9 +108,9 @@ class GeneratorEmail
     {
         $request = $this->request(self::API, 'GET', null, ['Max' => 1], array_merge(self::Header, ['Cookie: surl=' . $this->domain . '/' . $this->user . '/']), null, true);
         preg_match('/<span id="mess_number">(.*?)<\/span>/m', $request['Body'], $countMessage);
-        if ($countMessage[1] == 1) {
+        if (@$countMessage[1] == 1) {
             $GettingBody = $this->getStr($request['Body'], '<div class="text_swc">Pop-up notification</div></div>', '<script type="text/javaScript">');
-            return [
+            $this->data = [
                 'status' => true,
                 'Count_message' => $countMessage[1],
                 'Dell_key' => $this->getStr($request['Body'], '{ delll: "', '"}'),
@@ -111,10 +121,12 @@ class GeneratorEmail
                     'Body_message' => $this->getStr($request['Body'], '<div dir="ltr">', '</div>'),
                 ],
             ];
-        } elseif ($countMessage[1] > 1) {
+
+        } elseif (@$countMessage[1] > 1) {
             preg_match_all('/<a href="(.*?)"  class="e7m list-group-item/m', $request['Body'], $matches);
             preg_match_all('/<div class="e7m from_div_45g45gg">(.*?)<\/div>/m', $request['Body'], $matchesFrom);
             preg_match_all('/<div class="e7m subj_div_45g45gg">(.*?)<\/div>/m', $request['Body'], $matchesSubj);
+            preg_match_all('/<div class="e7m time_div_45g45gg">(.*?)<\/div>/m', $request['Body'], $matchesTime);
             preg_match_all('/<div class="e7m time_div_45g45gg">(.*?)<\/div>/m', $request['Body'], $matchesTime);
 
             // Build Message Collections
@@ -128,18 +140,20 @@ class GeneratorEmail
 
                 ];
             }
-            return [
+            $this->data = [
                 'status' => true,
                 'Count_message' => $countMessage[1],
                 'Dell_key' => $this->getStr($request['Body'], '{ delll: "', '" }'),
                 'Data' => $datas,
             ];
+
         } else {
-            return [
+            $this->data = [
                 'status' => false,
                 'message' => 'No messages',
             ];
         }
+        return $this;
 
     }
 
@@ -153,10 +167,11 @@ class GeneratorEmail
         if ($longAddress !== null) {
             $request = $this->request(self::API, 'GET', null, ['Max' => 1], array_merge(self::Header, ['Cookie: surl=' . $this->domain . '/' . $this->user . '/' . $longAddress . '; embx=%5B%22' . $this->user . '%40' . $this->domain . '%22%5D']), null, true);
             $GettingBody = $this->getStr($request['Body'], '<div class="text_swc">Pop-up notification</div></div>', '<script type="text/javaScript">');
-            return [
+
+            $this->data = [
                 'status' => true,
                 'Long_address' => $longAddress,
-                'Dell_key' => $this->getStr($request['Body'], '{ delll: "', '" }'),
+                'Dell_key' => $this->getStr($request['Body'], '{ delll: "', '"}'),
                 'Data' => [
                     'From' => $this->getStr($request['Body'], '<div class="e7m from_div_45g45gg">', '</div>'),
                     'Subject' => $this->getStr($request['Body'], '<div class="e7m subj_div_45g45gg">', '</div>'),
@@ -164,9 +179,22 @@ class GeneratorEmail
                     'Body_message' => $this->getStr($request['Body'], '<div dir="ltr">', '</div>'),
                 ],
             ];
+            return $this;
         } else {
             throw new Exception('Long Address Empty !');
         }
+
+    }
+
+    /**
+     * Regex Result to get specific String
+     *
+     **/
+    public function GetSpecific($pattren)
+    {
+
+        preg_match_all($pattren, $this->data['Data']['Body_message'], $matches);
+        return $matches;
 
     }
 
