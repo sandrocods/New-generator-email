@@ -14,7 +14,7 @@ print_r($GeneratorEmail->getEmail());
  * Generate New Email with specific Name & Domain
  */
 
-* print_r($GeneratorEmail->getEmail('hraed.amale', 'boranora.com')); 
+ print_r($GeneratorEmail->getEmail('hraed.amale', 'boranora.com')); 
 
 /**
  * Check Status Email
