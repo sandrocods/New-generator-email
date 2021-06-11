@@ -14,21 +14,21 @@ print_r($GeneratorEmail->getEmail());
  * Generate New Email with specific Name & Domain
  */
 
-/* print_r($GeneratorEmail->getEmail('hraed.amale', 'boranora.com')); */
+* print_r($GeneratorEmail->getEmail('hraed.amale', 'boranora.com')); 
 
 /**
  * Check Status Email
  */
-/* print_r($GeneratorEmail->CheckValidation()); */
+ print_r($GeneratorEmail->CheckValidation()); 
 
-sleep(30);
+
 
 /**
  * Read All Messages in Inbox
  */
 print_r($GeneratorEmail->ReadEmail());
 
-die();
+
 /**
  * Delete All Email in Inbox
  */
